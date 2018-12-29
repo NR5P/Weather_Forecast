@@ -143,19 +143,28 @@ function alertIfEmpty(long, lat) {
 
 function run_api_request() {
     const http = new HTTP;
-    http.get(`https://api.weather.gov/points/${longitude.value},${latitude.value}`)
-        .then(weather_info => console.log(weather_info))
-        .then(weather_info => put_forecast(weather_info));
+    let api_address = `https://api.weather.gov/points/${longitude.value},${latitude.value}`;
+    http.get(api_address)
+        .then(weather_info => weather_info)
+        .then(weather_info => put_forecast(weather_info))
+        .then(http.get(weather_info.properties.forecast))
+        .then(forecast_info => forecast_info)
+        .then(forecast_info => output_forecast_info(forecast_info))
 }
 
 function put_forecast(forecast) {
     let todays_forecast = document.querySelector("#today-forecast");
-    if (todays_forecast.childNodes) {
+
+    if (todays_forecast.childNodes)
         todays_forecast.removeChild(todays_forecast.firstChild);
-    }
     let h3_city = document.createElement("h3");
-    h3_city.appendChild(document.createTextNode(`Forecast for ${forecast.properties.relativeLocation.properties.city}`));
+    //h3_city.appendChild(document.createTextNode(`Forecast for ${forecast.properties.relativeLocation.properties.city}`));
+    h3_city.textContent = `forecast for ${forecast.properties.relativeLocation.properties.city}`;
     todays_forecast.appendChild(h3_city);
+}
+
+function output_forecast_info(forecast) {
+    console.log(forecast);
 }
 
 
