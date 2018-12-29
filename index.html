@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>weather center</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Weather Center</h1>
+    <h2>location</h2>
+    <form id="form">
+        <label for="location">Location Name</label>
+        <input id="location" name="location" type="text"/>
+
+        <label for="longitude">Longitude</label>
+        <input id="longitude" name="Longitude" type="number" step="any"/>
+
+        <label for="latitude">Latitude</label>
+        <input id="latitude" name="Latitude" type="number" step="any"/>
+
+        <input id="submit" type="submit" name="getForecast" value="Get Forecast"/>
+        <input id="clear-btn" type="button" value="Clear"/>
+    </form>
+
+    <div>
+        <ul id="location-list"></ul>
+    </div>
+
+    <h2>Today's Forecast</h2>
+    <div id="today-forecast">
+
+    </div>
+
+    <h2>10 Day Forecast</h2>
+    <div id="ten-day-forecast">
+
+    </div>
+</body>
+
+<script src="http.js"></script>
+<script src="scripts.js"></script>
+</html>
