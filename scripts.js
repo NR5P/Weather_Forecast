@@ -142,14 +142,19 @@ function alertIfEmpty(long, lat) {
 }
 
 function run_api_request() {
-    const http = new HTTP;
     let api_address = `https://api.weather.gov/points/${longitude.value},${latitude.value}`;
-    http.get(api_address)
-        .then(weather_info => weather_info)
-        .then(weather_info => put_forecast(weather_info))
-        .then(http.get(weather_info.properties.forecast))
-        .then(forecast_info => forecast_info)
+    fetch(api_address)
+        .then(response => response.json())
+        .then(weather_info => {
+            put_forecast(weather_info);
+            fetch(weather_info.properties.forecast);
+        })
+        .then(response => response.json())
+        //.then(weather_info => put_forecast(weather_info))
+        //.then(fetch(weather_info.properties.forecast))
         .then(forecast_info => output_forecast_info(forecast_info))
+
+        .catch(err => console.log(err))
 }
 
 function put_forecast(forecast) {
