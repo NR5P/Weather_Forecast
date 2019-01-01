@@ -4,6 +4,9 @@ let latitude = document.querySelector("#latitude");
 let user_location = document.querySelector("#location");
 const location_list = document.querySelector("#location-list");
 
+const todays_forecast = document.querySelector("#today-forecast");
+const ten_day_forecast = document.querySelector("#ten-day-forecast");
+
 //***************************************EVENT LISTENERS**************************************************************
 /*
 for a general submission with longitude and latitude cordinance
@@ -147,29 +150,56 @@ function run_api_request() {
         .then(response => response.json())
         .then(weather_info => {
             put_forecast(weather_info);
-            fetch(weather_info.properties.forecast);
+            return fetch(weather_info.properties.forecast);
         })
         .then(response => response.json())
-        //.then(weather_info => put_forecast(weather_info))
-        //.then(fetch(weather_info.properties.forecast))
         .then(forecast_info => output_forecast_info(forecast_info))
 
-        .catch(err => console.log(err))
+        //.catch(err => console.log("there was an error: " + err))
 }
 
 function put_forecast(forecast) {
-    let todays_forecast = document.querySelector("#today-forecast");
+    const city = forecast.properties.relativeLocation.properties.city;
+    const state = forecast.properties.relativeLocation.properties.state;
 
     if (todays_forecast.childNodes)
         todays_forecast.removeChild(todays_forecast.firstChild);
     let h3_city = document.createElement("h3");
-    //h3_city.appendChild(document.createTextNode(`Forecast for ${forecast.properties.relativeLocation.properties.city}`));
-    h3_city.textContent = `forecast for ${forecast.properties.relativeLocation.properties.city}`;
+
+    h3_city.textContent = `forecast for ${city}, ${state}`;
     todays_forecast.appendChild(h3_city);
 }
 
 function output_forecast_info(forecast) {
-    console.log(forecast);
+    for (let i = 0; i < 15; i++) {
+        let h3_day = document.createElement("h3");
+        let forecast_body = document.createElement("p");
+
+        let thisDay = forecast.properties.periods[i].name; // ex this afternoon, this new years day, etc.
+        let isDayTime = forecast.properties.periods[i].isDayTime; // returns bool
+        let temp = forecast.properties.periods[i].temperature; // returns degree f
+        let tempUnit = forecast.properties.periods[i].temperatureUnity; // F for fahrenheit
+        let windSpeed = forecast.properties.periods[i].windSpeed; // ex: 10 - 15 mph
+        let windDirection = forecast.properties.periods[i].windDirection; // ex: "N" or "S"
+        let icon = forecast.properties.periods[i].icon;
+        let shortForecast = forecast.properties.periods[i].ShortForecast; // ex: slight chance of showers and thunderstorms
+
+        console.log(thisDay);
+
+        h3_day.textContent = thisDay;
+        forecast_body.innerHTML =
+            `<p>the temperature ${thisDay} will be ${temp}${tempUnit}</p>
+             <p>wind speed: ${windSpeed}</p>
+             <p>wind direction: ${windDirection}</p>
+             <p>short forecast: ${shortForecast}</p>`;
+
+        let ten_day_forecast_div = document.createElement("div");
+        ten_day_forecast_div.appendChild(h3_day) ;
+        ten_day_forecast_div.appendChild(forecast_body);
+        ten_day_forecast.appendChild(ten_day_forecast_div);
+    }
 }
+
+//TODO look up adding image icons from nws api
 
 
