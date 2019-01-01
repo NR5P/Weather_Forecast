@@ -44,10 +44,9 @@ location_list.addEventListener("click", function (e) {
                 user_location.value = city[0];
                 longitude.value = city[1];
                 latitude.value = city[2];
-
-                run_api_request();
             }
-        })
+        });
+        run_api_request();
     }
 });
 
@@ -154,7 +153,7 @@ function run_api_request() {
         })
         .then(response => response.json())
         .then(forecast_info =>  {
-            output_forecast_info(forecast_info)
+            output_forecast_info(forecast_info);
         })
 
         //.catch(err => console.log("there was an error: " + err))
@@ -164,7 +163,7 @@ function put_forecast(forecast) {
     const city = forecast.properties.relativeLocation.properties.city;
     const state = forecast.properties.relativeLocation.properties.state;
 
-    if (todays_forecast.childNodes)
+    while (todays_forecast.firstChild)
         todays_forecast.removeChild(todays_forecast.firstChild);
     let h3_city = document.createElement("h3");
 
@@ -176,6 +175,8 @@ function put_forecast(forecast) {
 loops 14 times to make 14 divs to show todays and future forecasts
  */
 function output_forecast_info(forecast) {
+    while (ten_day_forecast.firstChild)
+        ten_day_forecast.removeChild(ten_day_forecast.firstChild);
     for (let i = 0; i < 15; i++) {
         let h3_day = document.createElement("h3");
         let forecast_body = document.createElement("p");
