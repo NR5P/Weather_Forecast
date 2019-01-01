@@ -153,7 +153,9 @@ function run_api_request() {
             return fetch(weather_info.properties.forecast);
         })
         .then(response => response.json())
-        .then(forecast_info => output_forecast_info(forecast_info))
+        .then(forecast_info =>  {
+            output_forecast_info(forecast_info)
+        })
 
         //.catch(err => console.log("there was an error: " + err))
 }
@@ -170,6 +172,9 @@ function put_forecast(forecast) {
     todays_forecast.appendChild(h3_city);
 }
 
+/*
+loops 14 times to make 14 divs to show todays and future forecasts
+ */
 function output_forecast_info(forecast) {
     for (let i = 0; i < 15; i++) {
         let h3_day = document.createElement("h3");
@@ -178,17 +183,15 @@ function output_forecast_info(forecast) {
         let thisDay = forecast.properties.periods[i].name; // ex this afternoon, this new years day, etc.
         let isDayTime = forecast.properties.periods[i].isDayTime; // returns bool
         let temp = forecast.properties.periods[i].temperature; // returns degree f
-        let tempUnit = forecast.properties.periods[i].temperatureUnity; // F for fahrenheit
+        let tempUnit = forecast.properties.periods[i].temperatureUnit; // F for fahrenheit
         let windSpeed = forecast.properties.periods[i].windSpeed; // ex: 10 - 15 mph
         let windDirection = forecast.properties.periods[i].windDirection; // ex: "N" or "S"
         let icon = forecast.properties.periods[i].icon;
-        let shortForecast = forecast.properties.periods[i].ShortForecast; // ex: slight chance of showers and thunderstorms
-
-        console.log(thisDay);
+        let shortForecast = forecast.properties.periods[i].shortForecast; // ex: slight chance of showers and thunderstorms
 
         h3_day.textContent = thisDay;
         forecast_body.innerHTML =
-            `<p>the temperature ${thisDay} will be ${temp}${tempUnit}</p>
+            `<p>the temperature ${thisDay} will be ${temp}\xB0${tempUnit}</p>
              <p>wind speed: ${windSpeed}</p>
              <p>wind direction: ${windDirection}</p>
              <p>short forecast: ${shortForecast}</p>`;
@@ -200,6 +203,8 @@ function output_forecast_info(forecast) {
     }
 }
 
+//TODO get the gps coordinate of the city using another api
 //TODO look up adding image icons from nws api
+//TODO use google api for a map
 
 
