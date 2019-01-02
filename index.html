@@ -8,9 +8,18 @@
 <body>
     <h1>Weather Center</h1>
     <h2>location</h2>
+    <form id="apiDiv">
+        <label for="apiKey">GOOGLE API KEY</label>
+        <input id="apiKey" type="text"/>
+
+        <input type="button" id="apikey-btn" value="save api key"/>
+    </form>
     <form id="form">
-        <label for="location">Location Name</label>
-        <input id="location" name="location" type="text"/>
+        <label for="location_city">City</label>
+        <input id="location_city" type="text"/>
+
+        <label for="location_state">State</label>
+        <input id="location_state" type="text"/>
 
         <label for="longitude">Longitude</label>
         <input id="longitude" name="Longitude" type="number" step="any"/>

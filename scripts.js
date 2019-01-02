@@ -1,11 +1,15 @@
 const form = document.querySelector("#form");
 let longitude = document.querySelector("#longitude");
 let latitude = document.querySelector("#latitude");
-let user_location = document.querySelector("#location");
+//let user_location = document.querySelector("#location");
+let city = document.querySelector("#location_city");
+let state = document.querySelector("#location_state");
 const location_list = document.querySelector("#location-list");
 
 const todays_forecast = document.querySelector("#today-forecast");
 const ten_day_forecast = document.querySelector("#ten-day-forecast");
+
+const googleApiKey = document.querySelector("#apiKey");
 
 //***************************************EVENT LISTENERS**************************************************************
 /*
@@ -16,13 +20,15 @@ document.querySelector("#submit").addEventListener("click",
         alertIfEmpty(longitude, latitude); // alert if there is no input for longitude or  latitude
 
         // if they user put a name add it to list for quicker access later
-        if (user_location.value.trim() !== "") {
+        if (city.value.trim() !== "" && state.value.trim() !== "") {
             add_location();
         }
 
+        /* no longer need because using google api to get coordinates
         if (longitude.value !== "" && latitude.value !== "") {
             run_api_request();
         }
+        */
 
         e.preventDefault()
     });
@@ -36,14 +42,16 @@ location_list.addEventListener("click", function (e) {
 
         // remove from local storage
         removeCityFromLocalStorage(e.target.parentElement.parentElement);
+    // if the user clicks on the text of the city the contents will be filled in to the form and will look up weather
     } else if (e.target.classList.contains("li-location")) {
         let cities = JSON.parse(localStorage.getItem("cities"));
 
         cities.forEach(function (city) {
-            if (e.target.textContent === city[0]) {
-                user_location.value = city[0];
-                longitude.value = city[1];
-                latitude.value = city[2];
+            if (e.target.textContent === city[0] || e.target.textContent === city[1]) {
+                city.value = city[0];
+                state.value = city[1];
+                longitude.value = city[2];
+                latitude.value = city[3];
             }
         });
         run_api_request();
@@ -78,10 +86,37 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.querySelector("#clear-btn").addEventListener("click", function () {
-    user_location.value = "";
+    city.value = "";
+    state.value = "";
     longitude.value = "";
     latitude.value = "";
 });
+
+// button to save a new google api key
+document.querySelector("#apikey-btn").addEventListener("click", function() {
+    //TODO store api key in local storage
+    let apiKey;
+    if (localStorage.getItem("apiKey") === null) {
+        localStorage.setItem("apiKey", JSON.stringify(googleApiKey.value));
+    }
+    else {
+        localStorage.removeItem("apiKey");
+        googleApiKey.value = JSON.parse(localStorage.getItem("apiKey"));
+        localStorage.setItem("apiKey", JSON.stringify(googleApiKey.value));
+    }
+
+    apiKey = googleApiKey.value;
+    localStorage.setItem("apiKey", JSON.stringify(apiKey));
+});
+
+document.onload = function() {
+    if (localStorage.getItem("apiKey") !== null) {
+        googleApiKey.value = JSON.parse(localStorage.getItem("apiKey"));
+    }
+    else {
+        googleApiKey.value = "need api key";
+    }
+};
 //******************************************END EVENT LISTENERS********************************************************
 
 /*
@@ -89,9 +124,10 @@ add location of user to list if they put a name
  */
 function add_location() {
     // create new list item link for users location
+    let user_location = `${city.value}, ${state.value}`
     let li = document.createElement("li");
     li.className = "li-location"; //TODO make li a link to click on. And have it add long and lat when clicked
-    li.appendChild(document.createTextNode(user_location.value));
+    li.appendChild(document.createTextNode(user_location));
 
     // create delete link item
     const delete_link = document.createElement("a");
@@ -102,13 +138,13 @@ function add_location() {
     // append li to ul
     location_list.appendChild(li);
 
-    storeCityInLocalStorage(user_location.value, longitude.value, latitude.value);
+    storeCityInLocalStorage(city.value, state.value, longitude.value, latitude.value);
 }
 
 /*
 store city in local storage
  */
-function storeCityInLocalStorage(city, longitude, latitude) {
+function storeCityInLocalStorage(city, state, longitude, latitude) {
     let cities;
     if (localStorage.getItem("cities") === null) {
         cities = [];
@@ -116,7 +152,7 @@ function storeCityInLocalStorage(city, longitude, latitude) {
         cities = JSON.parse(localStorage.getItem("cities"));
     }
 
-    cities.push([city, longitude, latitude]);
+    cities.push([city, state, longitude, latitude]);
 
     localStorage.setItem("cities", JSON.stringify(cities));
 }
@@ -137,13 +173,27 @@ function removeCityFromLocalStorage(cityItem) {
     localStorage.setItem("cities",JSON.stringify(cities));
 }
 
+/*
+no longer needed because using google api to get the location
 function alertIfEmpty(long, lat) {
     if (long.value === "" || lat.value === "") {
         alert("need both longitude and latitude");
     }
 }
+*/
+
+function getGoogleApiInfo() {
+    let api_address = `https://maps.googleapis.com/maps/api/geocode/json?address=${city.value}+${state.value}&key=%20${googleApiKey}`;
+    fetch(api_address)
+        .then(response => response.json())
+        .then(responseJson => {
+            longitude.value = responseJson[0].geometry.location.lat;
+            latitude.value = responseJson[0].geometry.location.lng;
+    })
+}
 
 function run_api_request() {
+    getGoogleApiInfo();
     let api_address = `https://api.weather.gov/points/${longitude.value},${latitude.value}`;
     fetch(api_address)
         .then(response => response.json())
