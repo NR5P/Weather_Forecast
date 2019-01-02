@@ -1,11 +1,10 @@
-const form = document.querySelector("#form");
 let longitude = document.querySelector("#longitude");
 let latitude = document.querySelector("#latitude");
-//let user_location = document.querySelector("#location");
-let city = document.querySelector("#location_city");
-let state = document.querySelector("#location_state");
+let city = document.querySelector("#location-city");
+let state = document.querySelector("#location-state");
 const location_list = document.querySelector("#location-list");
 
+// selectors for the divs where weather information will go
 const todays_forecast = document.querySelector("#today-forecast");
 const ten_day_forecast = document.querySelector("#ten-day-forecast");
 
@@ -13,28 +12,22 @@ const googleApiKey = document.querySelector("#apiKey");
 
 //***************************************EVENT LISTENERS**************************************************************
 /*
-for a general submission with longitude and latitude cordinance
+for a general submission with longitude and latitude coordinates
  */
 document.querySelector("#submit").addEventListener("click",
     function (e) {
-        alertIfEmpty(longitude, latitude); // alert if there is no input for longitude or  latitude
-
-        // if they user put a name add it to list for quicker access later
         if (city.value.trim() !== "" && state.value.trim() !== "") {
             add_location();
+        } else {
+            alert("need city and state!");
         }
-
-        /* no longer need because using google api to get coordinates
-        if (longitude.value !== "" && latitude.value !== "") {
-            run_api_request();
-        }
-        */
 
         e.preventDefault()
     });
 
 /*
-delete li for town locations if the user clicks on the delete icon
+delete li for town locations if the user clicks on the delete icon and populate information from local storage
+into the text inputs and get weather info  if they click on the city text
  */
 location_list.addEventListener("click", function (e) {
     if (e.target.parentElement.classList.contains("delete")) {
@@ -42,19 +35,20 @@ location_list.addEventListener("click", function (e) {
 
         // remove from local storage
         removeCityFromLocalStorage(e.target.parentElement.parentElement);
+
     // if the user clicks on the text of the city the contents will be filled in to the form and will look up weather
     } else if (e.target.classList.contains("li-location")) {
         let cities = JSON.parse(localStorage.getItem("cities"));
 
-        cities.forEach(function (city) {
-            if (e.target.textContent === city[0] || e.target.textContent === city[1]) {
-                city.value = city[0];
-                state.value = city[1];
-                longitude.value = city[2];
-                latitude.value = city[3];
+        cities.forEach(function (item) {
+            if (e.target.textContent === item[0] + ", " + item[1]) {
+                city.value = item[0];
+                state.value = item[1];
+                longitude.value = item[2];
+                latitude.value = item[3];
             }
         });
-        run_api_request();
+        run_api_request(); // run api request and get the weather
     }
 });
 
@@ -72,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
      cities.forEach(function (city) {
          let li = document.createElement("li");
          li.className = "li-location";
-         li.appendChild(document.createTextNode(city[0]));
+         li.appendChild(document.createTextNode(city[0] + ", " + city[1]));
 
          const delete_link = document.createElement("a");
          delete_link.className = "delete";
@@ -85,6 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
      })
 });
 
+// if clear clear entire form input except for api key
 document.querySelector("#clear-btn").addEventListener("click", function () {
     city.value = "";
     state.value = "";
@@ -94,22 +89,13 @@ document.querySelector("#clear-btn").addEventListener("click", function () {
 
 // button to save a new google api key
 document.querySelector("#apikey-btn").addEventListener("click", function() {
-    //TODO store api key in local storage
-    let apiKey;
-    if (localStorage.getItem("apiKey") === null) {
-        localStorage.setItem("apiKey", JSON.stringify(googleApiKey.value));
-    }
-    else {
+    if (localStorage.getItem("apiKey") !== null) {
         localStorage.removeItem("apiKey");
-        googleApiKey.value = JSON.parse(localStorage.getItem("apiKey"));
-        localStorage.setItem("apiKey", JSON.stringify(googleApiKey.value));
     }
-
-    apiKey = googleApiKey.value;
-    localStorage.setItem("apiKey", JSON.stringify(apiKey));
+    localStorage.setItem("apiKey", googleApiKey.value);
 });
 
-document.onload = function() {
+window.onload = function() {
     if (localStorage.getItem("apiKey") !== null) {
         googleApiKey.value = JSON.parse(localStorage.getItem("apiKey"));
     }
@@ -120,13 +106,13 @@ document.onload = function() {
 //******************************************END EVENT LISTENERS********************************************************
 
 /*
-add location of user to list if they put a name
+add city and state to list
  */
 function add_location() {
     // create new list item link for users location
-    let user_location = `${city.value}, ${state.value}`
+    let user_location = `${city.value}, ${state.value}`;
     let li = document.createElement("li");
-    li.className = "li-location"; //TODO make li a link to click on. And have it add long and lat when clicked
+    li.className = "li-location";
     li.appendChild(document.createTextNode(user_location));
 
     // create delete link item
@@ -173,22 +159,13 @@ function removeCityFromLocalStorage(cityItem) {
     localStorage.setItem("cities",JSON.stringify(cities));
 }
 
-/*
-no longer needed because using google api to get the location
-function alertIfEmpty(long, lat) {
-    if (long.value === "" || lat.value === "") {
-        alert("need both longitude and latitude");
-    }
-}
-*/
-
 function getGoogleApiInfo() {
-    let api_address = `https://maps.googleapis.com/maps/api/geocode/json?address=${city.value}+${state.value}&key=%20${googleApiKey}`;
+    let api_address = `https://maps.googleapis.com/maps/api/geocode/json?address=${city.value}+${state.value}&key=%20${googleApiKey.value}`;
     fetch(api_address)
         .then(response => response.json())
         .then(responseJson => {
-            longitude.value = responseJson[0].geometry.location.lat;
-            latitude.value = responseJson[0].geometry.location.lng;
+            longitude.value = responseJson.results[0].geometry.location.lat;
+            latitude.value = responseJson.results[0].geometry.location.lng;
     })
 }
 
@@ -254,7 +231,6 @@ function output_forecast_info(forecast) {
     }
 }
 
-//TODO get the gps coordinate of the city using another api
 //TODO look up adding image icons from nws api
 //TODO use google api for a map
 
